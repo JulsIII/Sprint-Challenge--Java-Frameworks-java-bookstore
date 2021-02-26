@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,36 +134,36 @@ public class BookServiceImplUnitTestNoDB
     @Test
     public void findBookById()
     {
-        Mockito.when(bookrepos.findById(101L))
+        Mockito.when(bookrepos.findById(1L))
                 .thenReturn(Optional.of(myBookList.get(0)));
 
         assertEquals("admin",
-                bookService.findBookById(101L)
+                bookService.findBookById(1L)
             .getTitle());
     }
 
     @Test(expected = ResourceNotFoundException.class)
     public void notFindBookById()
     {
-        Mockito.when(bookrepos.findById(101L))
+        Mockito.when(bookrepos.findById(1L))
                 .thenReturn(Optional.empty());
 
         assertEquals("admin",
-                bookService.findBookById(101L)
+                bookService.findBookById(1L)
                         .getTitle());
     }
 
     @Test
     public void delete()
     {
-        Mockito.when(bookrepos.findById(103L))
+        Mockito.when(bookrepos.findById(3L))
                 .thenReturn(Optional.of(myBookList.get(0)));
 
         Mockito.doNothing()
                 .when(bookrepos)
-                .deleteById(103L);
+                .deleteById(3L);
 
-        bookService.delete(103L);
+        bookService.delete(3L);
         assertEquals(5,
            myBookList.size());
     }
@@ -181,7 +183,10 @@ public class BookServiceImplUnitTestNoDB
                 .add(new Wrote(a2, b2));
         myBookList.add(b2);
 
-//        Mockito.when(bookrepos.findById(2))
+        Mockito.when(bookrepos.save(any(Book.class)))
+                .thenReturn(b2);
+
+//        Mockito.when(bookrepos.findById(2L))
 //                .thenReturn(b2);
 
         assertEquals("Robert",
