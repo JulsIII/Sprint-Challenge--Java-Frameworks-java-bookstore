@@ -20,11 +20,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static junit.framework.TestCase.assertEquals;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = BookstoreApplicationTest.class)
+@SpringBootTest(classes = BookstoreApplicationTest.class,
+    properties = {
+        "command.line.runner.enabled=false"})
 public class BookServiceImplUnitTestNoDB
 {
 
@@ -35,6 +38,9 @@ public class BookServiceImplUnitTestNoDB
     private BookRepository bookrepos;
 
     List<Book> myBookList = new ArrayList<>();
+
+//    @MockBean
+//    private HelperFunctions helperFunctions;
 
     @Before
     public void setUp() throws
@@ -107,7 +113,7 @@ public class BookServiceImplUnitTestNoDB
     }
 
     @After
-    public void tearDown() throws
+    public void tearDown() throws  //fill-in needed?
             Exception
     {
     }
@@ -115,26 +121,72 @@ public class BookServiceImplUnitTestNoDB
     @Test
     public void findAll()
     {
+        Mockito.when(bookrepos.findAll())
+                .thenReturn(myBookList);
+
+        assertEquals(5,
+                bookService.findAll()
+                        .size());
     }
 
     @Test
     public void findBookById()
     {
+        Mockito.when(bookrepos.findById(101L))
+                .thenReturn(Optional.of(myBookList.get(0)));
+
+        assertEquals("admin",
+                bookService.findBookById(101L)
+            .getTitle());
     }
 
     @Test(expected = ResourceNotFoundException.class)
     public void notFindBookById()
     {
+        Mockito.when(bookrepos.findById(101L))
+                .thenReturn(Optional.empty());
+
+        assertEquals("admin",
+                bookService.findBookById(101L)
+                        .getTitle());
     }
 
     @Test
     public void delete()
     {
+        Mockito.when(bookrepos.findById(103L))
+                .thenReturn(Optional.of(myBookList.get(0)));
+
+        Mockito.doNothing()
+                .when(bookrepos)
+                .deleteById(103L);
+
+        bookService.delete(103L);
+        assertEquals(5,
+           myBookList.size());
     }
 
     @Test
     public void save()
     {
+        Author a2 = new Author("Robert", "Garcia");
+        a2.setAuthorid(2);
+
+        Section s2 = new Section("NeuroTechnology");
+        s2.setSectionid(2);
+
+        Book b2 = new Book("Digital Minds", "9788489366669", 2007, s2);
+        b2.setBookid(2);
+        b2.getWrotes()
+                .add(new Wrote(a2, b2));
+        myBookList.add(b2);
+
+//        Mockito.when(bookrepos.findById(2))
+//                .thenReturn(b2);
+
+        assertEquals("Robert",
+                bookService.save(b2)
+                .getTitle());
     }
 
     @Test
